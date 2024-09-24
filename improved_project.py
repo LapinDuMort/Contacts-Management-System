@@ -17,7 +17,7 @@ def add():
     addemail = addemail.lower().strip()
     addnumber = addnumber.strip(" abcdefghijklmnopqrstuvwxyz+()[]ABCDEFGHIJKLMNOPQRSTUVWXYZ")
     
-    confirm = input(f"You wish to add a ontact called {addname}, with a phone number of {addnumber} and an email of {addemail}. Is this correct? Y/N: ")
+    confirm = input(f"You wish to add a contact called {addname}, with a phone number of {addnumber} and an email of {addemail}. Is this correct? Y/N: ")
     confirm = confirm.upper()
     
     while confirm != "Y" and confirm != "N":
@@ -172,7 +172,7 @@ def update():
 def delete():
     custnamedelete = input("To delete a contact's info please enter the contact's name or type [all] to delete all contacts: ")
     custnamedelete = custnamedelete.title().strip("[]")
-    
+
     if custnamedelete == "All":
         confirmchoice = input("Are you SURE you wish to delete all contacts? Y/N: ")
         confirmchoice = confirmchoice.upper().strip(" []")
@@ -202,7 +202,7 @@ def delete():
                         deletename = str(name)
                         deletename = deletename.strip("()',")
                         db.execute("DELETE FROM contacts WHERE name = ?", [deletename])
-                        # Remove comment to make this stick! db.commit()
+                        db.commit()
 
                     print("All contacts successfully deleted!")     
                     customerchoice()
@@ -218,16 +218,7 @@ def delete():
         if confirmchoice == "N":
             print("Contacts NOT Deleted.")
             customerchoice()
-            db.execute(f"DELETE FROM contacts WHERE name = ?", [custnamedelete])
-            print(f"Successfully deleted contact: {custnamedelete}.")
-            db.commit()
-            customerchoice()
         
-        if confirmchoice == "N":
-            print(f"Contact NOT deleted.")
-            customerchoice()
-
-
     select_cursor = db.cursor()
     db_info = select_cursor.execute("SELECT * FROM contacts WHERE name = ?", [custnamedelete]).fetchone()
     
@@ -249,7 +240,9 @@ def delete():
         if confirm == "N":
             print(f"Contact NOT deleted.")
             customerchoice()
-
+    else:
+        print("That user does not appear to be in the database. If you would like to add them, please type [add].")
+        customerchoice()
 
 def customerchoice():
     userchoice = 0
