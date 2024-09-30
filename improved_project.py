@@ -2,7 +2,7 @@ import sqlite3, random
 from prettytable import PrettyTable
 
 db = sqlite3.connect("contacts.sqlite")
-
+#Creates table after connecting to db, we are using str for phone numbers to prevent the table dropping 0's at the cost of allowing users to add non-numeric numbers
 db.execute("CREATE TABLE IF NOT EXISTS contacts(name TEXT phone TEXT email TEXT)")
 
 select_cursor = db.cursor()
@@ -17,7 +17,7 @@ def add():
     #Formats name with a capital letter, makes emails lowercase and strips whitespace, stores numbers as strings but removes some common characters.
     addname = addname.title()
     addemail = addemail.lower().strip()
-    addnumber = addnumber.strip(" abcdefghijklmnopqrstuvwxyz+()[]ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    addnumber = addnumber.strip(" abcdefghijklmnopqrstuvwxyz+()[]ABCDEFGHIJKLMNOPQRSTUVWXYZ") #partial accounting for non-numeric values
     
     #confirmation option accepting Y/N options to add a contact to the database
     confirm = input(f"You wish to add a contact called {addname}, with a phone number of {addnumber} and an email of {addemail}. Is this correct? Y/N: ")
@@ -190,6 +190,8 @@ def update():
                     newphone = currentphone
 
                 newname = newname.title()
+                newphone = newphone.strip(" abcdefghijklmnopqrstuvwxyz+()[]ABCDEFGHIJKLMNOPQRSTUVWXYZ") #partial accounting for non-numeric values
+                newemail = newemail.lower()
                 db.execute(f"UPDATE contacts SET name = '{newname}', phone = '{newphone}', email= '{newemail}' WHERE rowid = ?", [rowid])
                 print(f"Successfully updated contact! New contact info: Name: {newname}, Phone: {newphone}, Email: {newemail}.")
                 db.commit()
@@ -232,6 +234,9 @@ def update():
                     newphone = currentphone
                     
                 newname = newname.title()
+                newphone = newphone.strip(" abcdefghijklmnopqrstuvwxyz+()[]ABCDEFGHIJKLMNOPQRSTUVWXYZ") #partial accounting for non-numeric values
+                newemail = newemail.lower()
+
                 db.execute(f"UPDATE contacts SET name = '{newname}', phone = '{newphone}', email= '{newemail}' WHERE rowid = ?", [rowid])
                 print(f"Successfully updated contact! New contact info: Name: {newname}, Phone: {newphone}, Email: {newemail}.")
                 db.commit()
@@ -273,6 +278,9 @@ def update():
                     newphone = currentphone
                     
                 newname = newname.title()
+                newphone = newphone.strip(" abcdefghijklmnopqrstuvwxyz+()[]ABCDEFGHIJKLMNOPQRSTUVWXYZ") #partial accounting for non-numeric values
+                newemail = newemail.lower()
+                
                 db.execute(f"UPDATE contacts SET name = '{newname}', phone = '{newphone}', email= '{newemail}' WHERE rowid = ?", [rowid])
                 print(f"Successfully updated contact! New contact info: Name: {newname}, Phone: {newphone}, Email: {newemail}.")
                 db.commit()
@@ -302,7 +310,7 @@ def deleteall():
                     confirmchoice = input(f"Please enter [Y] to confirm deletion or [N] to decline deletion: ")
                     confirmchoice = confirmchoice.upper().strip("[] ")
             
-                if confirmchoice == "Y":
+                if confirmchoice == "Y": # Silly addition forces user to solve a random sum to confirm deletion
                     vara = random.randrange(100)
                     varb = random.randrange(100)
                     answer = vara + varb
@@ -310,7 +318,7 @@ def deleteall():
                 
                     if answer == sumcheck:
                         select_cursor = db.cursor()
-                    
+                     #As SQLITE3 does not have drop table functionality, this iterates through the database and deletes each instance row by row
                         for name in select_cursor.execute("SELECT name FROM contacts"): 
                             deletename = str(name)
                             deletename = deletename.strip("()',")
@@ -451,7 +459,7 @@ def delete():
                 print("That email does not appear to be in the database. If you would like to add them, please type [add].")
                 customerchoice()
 
-def customerchoice():
+def customerchoice(): #prevents previous user choice from causing the program to stick in one menu
     userchoice = 0
 
 # Starter menu, customer is asked if they wish to update a contact, read contacts, add a new contact, delete contacts or quit the program. 
@@ -460,19 +468,19 @@ def customerchoice():
         userchoice = input("Type [update] to update a contact's info, [read] to read contact's info, [add] to add a new contact, [delete] to delete a contact from the database or [quit] to quit: ")
         userchoice = userchoice.lower().strip("[]")
     
-    if userchoice == "update":
+    if userchoice == "update": #runs update function
         update()
     
-    elif userchoice == "add":
+    elif userchoice == "add": #runs add user function
         add()
     
-    elif userchoice == "read":
+    elif userchoice == "read": #runs read database function
         read()
     
-    elif userchoice == "delete":
+    elif userchoice == "delete": #runs delete contact function
         delete()
     
-    elif userchoice == "quit":
+    elif userchoice == "quit": #quits the database and closes the instances of cursor and db
         print("Thanks for accessing the database! Bye!")
         select_cursor.close()
         db.close()
@@ -482,7 +490,7 @@ def customerchoice():
         "Invalid choice! Please type [update] to update contact info, [read] to read contact info, [add] to add a new contact, [delete] to delete a contact from the database or [quit] to quit: "
 
 print("Welcome to the contacts database!")
-
+#Running the program gives this text and then starts the program by opening the function customerchoice() which is designed to run until user inputs quit
 while True:
     customerchoice()
 
