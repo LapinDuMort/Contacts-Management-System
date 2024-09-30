@@ -25,6 +25,7 @@ def add():
     
     while confirm != "Y" and confirm != "N":
         confirm = input(f"Please enter Y to confirm addition or N to decline addition: ")
+        confirm = confirm.upper()
     
     if confirm == "Y":
         db.execute(f"INSERT INTO contacts(name, phone, email) Values('{addname}', '{addnumber}','{addemail}')")
@@ -147,43 +148,141 @@ def read():
         
 
 def update():
-    #Function allowing user to update or edit contact details already in the database. Currently only allows editing of first instance of name.
-    custnameupdate = input("To update a contact's info please enter the contact's name: ")
-    custnameupdate = custnameupdate.title()
-    select_cursor = db.cursor()
-    db_info = select_cursor.execute("SELECT rowid, * FROM contacts WHERE name = ?", [custnameupdate]).fetchone()
+
+    #Allows the user to delete all contacts listed under a name, phone number, email or just delete all contacts. Comment out db.commit while testing
+    inputtype = input("Would you like to update a contact by [name], [phone] or [email]? Alternatively you can type [quit] to return to the main menu: ")
+    inputtype = inputtype.lower().strip("[]")
+
+    #Only accepts name, phone, email or quit, otherwise will loop until one is entered
+    while inputtype != "name" and inputtype != "phone" and inputtype != "email" and inputtype!= "quit":
+        inputtype = input("Please either type [name] to update by name, [phone] to update by phone number, [email] to update by email, or [quit] to return to menu: ")
+        inputtype = inputtype.lower().strip("[]")
     
-    if db_info is not None:
+    if inputtype == "quit": #Returns to main menu 
+        customerchoice()
+    
+    elif inputtype == "name":
+        custnameupdate = input("To update a contact's info please enter the contact's name: ")
+        custnameupdate = custnameupdate.title()
+        select_cursor = db.cursor()
+        db_info = select_cursor.execute("SELECT rowid, * FROM contacts WHERE name = ?", [custnameupdate]).fetchone()
+    
+        if db_info is not None:
 
-        rowid, currentname, currentphone, currentemail = db_info
-        confirm = input(f"You wish to edit the contact called {currentname}, with a phone number of {currentphone} and an email of {currentemail}. Is this correct? Y/N: ")           
-        confirm = confirm.upper()
+            rowid, currentname, currentphone, currentemail = db_info
+            confirm = input(f"You wish to edit the contact called {currentname}, with a phone number of {currentphone} and an email of {currentemail}. Is this correct? Y/N: ")           
+            confirm = confirm.upper()
 
-        while confirm != "Y" and confirm != "N":
+            while confirm != "Y" and confirm != "N":
                 confirm = input(f"Please enter [Y] to confirm update or [N] to decline update: ")
                 confirm = confirm.upper()
 
-        if confirm == "Y":
-            newname = input(f"Please enter a new name for {currentname} or leave blank to keep the current name: ")
-            newphone = input(f"Please enter a new phone number for {currentname} or leave blank to keep the current number: ")
-            newemail = input(f"Please enter a new email for {currentname} or leave blank to keep the current email: ")
-            if newname == "":
-                newname = currentname
-            if newemail == "":
-                newemail = currentemail
-            if newphone == "":
-                newphone = currentphone
-            newname = newname.title()
-            db.execute(f"UPDATE contacts SET name = '{newname}', phone = '{newphone}', email= '{newemail}' WHERE rowid = ?", [rowid])
-            print(f"Successfully updated contact! New contact info: Name: {newname}, Phone: {newphone}, Email: {newemail}.")
-            db.commit()
+            if confirm == "Y":
+                newname = input(f"Please enter a new name for {currentname} or leave blank to keep the current name: ")
+                newphone = input(f"Please enter a new phone number for {currentname} or leave blank to keep the current number: ")
+                newemail = input(f"Please enter a new email for {currentname} or leave blank to keep the current email: ")
+
+                if newname == "": #Allows the user to keep details the same by entering a blank input
+                    newname = currentname
+                if newemail == "":
+                    newemail = currentemail
+                if newphone == "":
+                    newphone = currentphone
+
+                newname = newname.title()
+                db.execute(f"UPDATE contacts SET name = '{newname}', phone = '{newphone}', email= '{newemail}' WHERE rowid = ?", [rowid])
+                print(f"Successfully updated contact! New contact info: Name: {newname}, Phone: {newphone}, Email: {newemail}.")
+                db.commit()
+                customerchoice()
+
+            elif confirm == "N":
+                print("Contact NOT updated.")
+                customerchoice()
+            
+        else:
+            print("That user does not appear to be in the database. If you would like to add them, please type [add].")
             customerchoice()
 
-        elif confirm == "N":
-            print("Contact NOT updated.")
+    elif inputtype == "phone":
+        custphoneupdate = input("To update a contact's info please enter the contact's phone number: ")
+        custphoneupdate = custphoneupdate.title()
+        select_cursor = db.cursor()
+        db_info = select_cursor.execute("SELECT rowid, * FROM contacts WHERE phone = ?", [custphoneupdate]).fetchone()
+    
+        if db_info is not None:
+
+            rowid, currentname, currentphone, currentemail = db_info
+            confirm = input(f"You wish to edit the contact called {currentname}, with a phone number of {currentphone} and an email of {currentemail}. Is this correct? Y/N: ")           
+            confirm = confirm.upper()
+
+            while confirm != "Y" and confirm != "N":
+                confirm = input(f"Please enter [Y] to confirm update or [N] to decline update: ")
+                confirm = confirm.upper()
+
+            if confirm == "Y":
+                newname = input(f"Please enter a new name for {currentname} or leave blank to keep the current name: ")
+                newphone = input(f"Please enter a new phone number for {currentname} or leave blank to keep the current number: ")
+                newemail = input(f"Please enter a new email for {currentname} or leave blank to keep the current email: ")
+
+                if newname == "": #Allows the user to keep details the same by entering a blank input
+                    newname = currentname
+                if newemail == "":
+                    newemail = currentemail
+                if newphone == "":
+                    newphone = currentphone
+                    
+                newname = newname.title()
+                db.execute(f"UPDATE contacts SET name = '{newname}', phone = '{newphone}', email= '{newemail}' WHERE rowid = ?", [rowid])
+                print(f"Successfully updated contact! New contact info: Name: {newname}, Phone: {newphone}, Email: {newemail}.")
+                db.commit()
+                customerchoice()
+
+            elif confirm == "N":
+                print("Contact NOT updated.")
+                customerchoice()
+        else:
+            print("That number does not appear to be in the database. If you would like to add them, please type [add].")
             customerchoice()
-    else:
-            print("That user does not appear to be in the database. If you would like to add them, please type [add].")
+
+    elif inputtype == "email":
+        custemailupdate = input("To update a contact's info please enter the contact's email address: ")
+        custemailupdate = custemailupdate.title()
+        select_cursor = db.cursor()
+        db_info = select_cursor.execute("SELECT rowid, * FROM contacts WHERE email = ?", [custemailupdate]).fetchone()
+    
+        if db_info is not None:
+
+            rowid, currentname, currentphone, currentemail = db_info
+            confirm = input(f"You wish to edit the contact called {currentname}, with a phone number of {currentphone} and an email of {currentemail}. Is this correct? Y/N: ")           
+            confirm = confirm.upper()
+
+            while confirm != "Y" and confirm != "N":
+                confirm = input(f"Please enter [Y] to confirm update or [N] to decline update: ")
+                confirm = confirm.upper()
+
+            if confirm == "Y":
+                newname = input(f"Please enter a new name for {currentname} or leave blank to keep the current name: ")
+                newphone = input(f"Please enter a new phone number for {currentname} or leave blank to keep the current number: ")
+                newemail = input(f"Please enter a new email for {currentname} or leave blank to keep the current email: ")
+
+                if newname == "": #Allows the user to keep details the same by entering a blank input
+                    newname = currentname
+                if newemail == "":
+                    newemail = currentemail
+                if newphone == "":
+                    newphone = currentphone
+                    
+                newname = newname.title()
+                db.execute(f"UPDATE contacts SET name = '{newname}', phone = '{newphone}', email= '{newemail}' WHERE rowid = ?", [rowid])
+                print(f"Successfully updated contact! New contact info: Name: {newname}, Phone: {newphone}, Email: {newemail}.")
+                db.commit()
+                customerchoice()
+
+            elif confirm == "N":
+                print("Contact NOT updated.")
+                customerchoice()
+        else:
+            print("That email address does not appear to be in the database. If you would like to add it, please type [add].")
             customerchoice()
 
 def deleteall():
@@ -238,18 +337,18 @@ def delete():
     inputtype = input("Would you like to delete a contact by [name], [phone] or [email]? Alternatively you can type [all] to delete all saved contacts: ")
     inputtype = inputtype.lower().strip("[]")
         
-    #Only accepts Name, Phone, Email, Quit or All
+    #Only accepts Name, Phone, Email, Quit or All, otherwise will loop until one is entered
     while inputtype != "name" and inputtype != "phone" and inputtype != "email" and inputtype!= "quit" and inputtype!= "all":
         inputtype = input("Please either type [name] to search by name, [phone] to search by phone, [email] to search by email, [all] to delete all or [quit] to return to menu: ")
         inputtype = inputtype.lower().strip("[]")
     
-    if inputtype == "quit":
+    if inputtype == "quit": #Returns to main menu 
         customerchoice()
     
-    elif inputtype == "all":
+    elif inputtype == "all": #Runs delete all function from above
          deleteall()
 
-    elif inputtype == "name":
+    elif inputtype == "name": #Offers the choice to select by name or select all for deletion
     
         custnamedelete = input("To delete a contact's info please enter the contact's name or type [all] to delete all contacts: ")
         custnamedelete = custnamedelete.title().strip("[]")
@@ -266,19 +365,19 @@ def delete():
                 confirm = input(f"You wish to delete the contact called {currentname}, with an email of {currentemail} and a phone number of {currentphone}. Is this correct? Y/N: ")           
                 confirm = confirm.upper().strip("[] ")
         
-            while confirm != "Y" and confirm != "N":
-                confirm = input(f"Please enter [Y] to confirm deletion or [N] to decline deletion: ")
-                confirm = confirm.upper().strip("[] ")
-        
-            if confirm == "Y":
-                db.execute(f"DELETE FROM contacts WHERE rowid = ?", [rowid])
-                print(f"Successfully deleted contact: {custnamedelete}.")
-                db.commit()
-                customerchoice()
-        
-            if confirm == "N":
-                print(f"Contact NOT deleted.")
-                customerchoice()
+                while confirm != "Y" and confirm != "N":
+                    confirm = input(f"Please enter [Y] to confirm deletion or [N] to decline deletion: ")
+                    confirm = confirm.upper().strip("[] ")
+            
+                if confirm == "Y":
+                    db.execute(f"DELETE FROM contacts WHERE rowid = ?", [rowid])
+                    print(f"Successfully deleted contact: {custnamedelete}.")
+                    db.commit()
+                    customerchoice()
+            
+                if confirm == "N":
+                    print(f"Contact NOT deleted.")
+                    customerchoice()
             else:
                 print("That user does not appear to be in the database. If you would like to add them, please type [add].")
                 customerchoice()
@@ -300,19 +399,19 @@ def delete():
                 confirm = input(f"You wish to delete the contact called {currentname}, with an email of {currentemail} and a phone number of {currentphone}. Is this correct? Y/N: ")           
                 confirm = confirm.upper().strip("[] ")
         
-            while confirm != "Y" and confirm != "N":
-                confirm = input(f"Please enter [Y] to confirm deletion or [N] to decline deletion: ")
-                confirm = confirm.upper().strip("[] ")
-        
-            if confirm == "Y":
-                db.execute(f"DELETE FROM contacts WHERE rowid = ?", [rowid])
-                print(f"Successfully deleted contacts with the number: {custphonedelete}.")
-                db.commit()
-                customerchoice()
-        
-            if confirm == "N":
-                print(f"Contact NOT deleted.")
-                customerchoice()
+                while confirm != "Y" and confirm != "N":
+                    confirm = input(f"Please enter [Y] to confirm deletion or [N] to decline deletion: ")
+                    confirm = confirm.upper().strip("[] ")
+            
+                if confirm == "Y":
+                    db.execute(f"DELETE FROM contacts WHERE rowid = ?", [rowid])
+                    print(f"Successfully deleted contacts with the number: {custphonedelete}.")
+                    db.commit()
+                    customerchoice()
+            
+                if confirm == "N":
+                    print(f"Contact NOT deleted.")
+                    customerchoice()
             else:
                 print("That number does not appear to be in the database. If you would like to add them, please type [add].")
                 customerchoice()
@@ -331,22 +430,23 @@ def delete():
     
             if db_info is not None:
                 rowid, currentname, currentphone, currentemail = db_info
-                confirm = input(f"You wish to delete all contacts with the email: {currentemail}. Is this correct? Y/N: ")           
+                confirm = input(f"You wish to delete the contact called {currentname}, with an email of {currentemail} and a phone number of {currentphone}. Is this correct? Y/N: ")           
                 confirm = confirm.upper().strip("[] ")
         
-            while confirm != "Y" and confirm != "N":
-                confirm = input(f"Please enter [Y] to confirm deletion or [N] to decline deletion: ")
-                confirm = confirm.upper().strip("[] ")
-        
-            if confirm == "Y":
-                db.execute(f"DELETE FROM contacts WHERE rowid = ?", [rowid])
-                print(f"Successfully deleted contacts with the email: {custemaildelete}.")
-                db.commit()
-                customerchoice()
-        
-            if confirm == "N":
-                print(f"Contact NOT deleted.")
-                customerchoice()
+                while confirm != "Y" and confirm != "N":
+                    confirm = input(f"Please enter [Y] to confirm deletion or [N] to decline deletion: ")
+                    confirm = confirm.upper().strip("[] ")
+            
+                if confirm == "Y":
+                    db.execute(f"DELETE FROM contacts WHERE rowid = ?", [rowid])
+                    print(f"Successfully deleted contacts with the email: {custemaildelete}.")
+                    db.commit()
+                    customerchoice()
+            
+                if confirm == "N":
+                    print(f"Contact NOT deleted.")
+                    customerchoice()
+            
             else:
                 print("That email does not appear to be in the database. If you would like to add them, please type [add].")
                 customerchoice()
